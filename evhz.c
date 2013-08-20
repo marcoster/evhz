@@ -1,9 +1,10 @@
+#include <string.h>
 #include <stdio.h>
 #include <linux/input.h>
 #include <fcntl.h>
 #include <signal.h>
 
-#define EVENTS 10
+#define EVENTS 50
 #define HZ_LIST 64
 
 typedef struct event_s {
