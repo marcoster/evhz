@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	}
 
     if(geteuid() != 0) {
-        printf("%s must be used as superuser", argv[0]);
+        printf("%s must be used as superuser\n", argv[0]);
         return 1;
     }
 
