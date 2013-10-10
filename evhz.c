@@ -3,6 +3,8 @@
 #include <linux/input.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <getopt.h>
+#include <unistd.h>
 
 #define EVENTS 50
 #define HZ_LIST 64
@@ -11,19 +13,39 @@ typedef struct event_s {
 	int fd;
 	int hz[HZ_LIST];
 	int count;
+	int avghz;
 	double prvtime;
+	char name[128];
 } event_t;
 
 int quit = 0;
 
 void sigint() {
-	signal(SIGINT, sigint);
 	quit = 1;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
+	int optch;
 	int i;
 	event_t events[EVENTS];
+	int verbose = 0;
+
+	while((optch = getopt(argc, argv, "hv")) != -1) {
+		switch(optch) {
+			case('h'):
+				printf("Usage: %s [-v|-h]\n", argv[0]);
+				return 0;
+				break;
+			case('v'):
+				verbose = 1;
+				break;
+		}
+	}
+
+    if(geteuid() != 0) {
+        printf("%s must be used as superuser\n", argv[0]);
+        return 1;
+    }
 
 	signal(SIGINT, sigint);
 
@@ -31,6 +53,7 @@ int main(int argc, char **argv) {
 
 	memset(events, 0, sizeof(events));
 
+	// List input devices
 	for(i = 0; i < EVENTS; i++) {
 		char device[18];
 
@@ -38,9 +61,8 @@ int main(int argc, char **argv) {
 		events[i].fd = open(device, O_RDONLY);
 		
 		if(events[i].fd != -1) {
-			char name[128];
-			ioctl(events[i].fd, EVIOCGNAME(sizeof(name)), name);
-			printf("event%i: %s\n", i, name);
+			ioctl(events[i].fd, EVIOCGNAME(sizeof(events[i].name)), events[i].name);
+			if(verbose) printf("event%i: %s\n", i, events[i].name);
 		}
 	}
 
@@ -60,11 +82,7 @@ int main(int argc, char **argv) {
 			struct input_event event;
 
 			for(i = 0; i < EVENTS; i++) {
-				if(events[i].fd == -1) {
-					continue;
-				}
-
-				if(!FD_ISSET(events[i].fd, &set)) {
+				if(events[i].fd == -1 || !FD_ISSET(events[i].fd, &set)) {
 					continue;
 				}
 
@@ -82,21 +100,20 @@ int main(int argc, char **argv) {
 					hz = 1000 / (time - events[i].prvtime);
 
 					if(hz > 0) {
-						int avghz;
 						int j;
 
 						events[i].count++;
 						events[i].hz[events[i].count & (HZ_LIST - 1)] = hz;
 
-						avghz = 0;
+						events[i].avghz = 0;
 
 						for(j = 0; j < HZ_LIST; j++) {
-							avghz += events[i].hz[j];
+							events[i].avghz += events[i].hz[j];
 						}
 
-						avghz /= (events[i].count > HZ_LIST) ? HZ_LIST : events[i].count;
+						events[i].avghz /= (events[i].count > HZ_LIST) ? HZ_LIST : events[i].count;
 
-						printf("event%i: latest hz = %i (average hz = %i)\n", i, hz, avghz);
+						if(verbose) printf("%s: Latest % 5iHz, Average % 5iHz\n", events[i].name, hz, events[i].avghz);
 					}
 
 					events[i].prvtime = time;
@@ -107,7 +124,12 @@ int main(int argc, char **argv) {
 
 	for(i = 0; i < EVENTS; i++) {
 		if(events[i].fd != -1) {
+			if (events[i].avghz != 0) {
+				printf("\nAverage for %s: % 5iHz\n", events[i].name, events[i].avghz);
+			}
 			close(events[i].fd);
 		}
 	}
+
+	return 0;
 }
