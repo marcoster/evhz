@@ -9,7 +9,6 @@ To compile and run:
 
 gcc -o evhz evhz.c
 
-sudo ./evhz
-
+sudo ./evhz -v
 
 Bugs, patches, requests, etc. are welcome.
