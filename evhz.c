@@ -28,16 +28,18 @@ int main(int argc, char *argv[]) {
 	int optch;
 	int i;
 	event_t events[EVENTS];
-	int verbose = 0;
+	int verbose = 1;
 
-	while((optch = getopt(argc, argv, "hv")) != -1) {
+	while((optch = getopt(argc, argv, "hn")) != -1) {
 		switch(optch) {
 			case('h'):
-				printf("Usage: %s [-v|-h]\n", argv[0]);
+				printf("Usage: %s [-n|-h]\n", argv[0]);
+				printf("-n     nonverbose\n");
+				printf("-h     help\n");
 				return 0;
 				break;
-			case('v'):
-				verbose = 1;
+			case('n'):
+				verbose = 0;
 				break;
 		}
 	}
