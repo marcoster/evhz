@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
 	// List input devices
 	for(i = 0; i < EVENTS; i++) {
-		char device[18];
+		char device[19];
 
 		sprintf(device, "/dev/input/event%i", i);
 		events[i].fd = open(device, O_RDONLY);
