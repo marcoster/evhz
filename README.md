@@ -14,3 +14,5 @@ sudo ./evhz
 Nonverbose mode = -n
 
 Bugs, patches, requests, etc. are welcome.
+
+Last tested 7/2014 on Fedora 20. Still working great. 
