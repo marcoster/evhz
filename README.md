@@ -3,16 +3,16 @@ evhz
 
 Display the current mouse refresh rate under evdev linux system.
 
-The program is just evhz.c.
+For information about polling rate, see https://wiki.archlinux.org/index.php/Mouse_Polling_Rate
 
-To compile and run:
+The program is just evhz.c. Compile and run:
 
-gcc -o evhz evhz.c
-
-sudo ./evhz
+    gcc -o evhz evhz.c
+    sudo ./evhz
 
 Nonverbose mode = -n
 
-Bugs, patches, requests, etc. are welcome.
+Maintainer: Ian Kelling <ian@iankelling.org>
+Bugs, patches, requests, feedback is welcome.
 
 Last tested 7/2014 on Fedora 20. Still working great. 
