@@ -13,6 +13,7 @@ The program is just evhz.c. Compile and run:
 Nonverbose mode = -n
 
 Maintainer: Ian Kelling <ian@iankelling.org>
-Bugs, patches, requests, feedback is welcome.
+
+Bugs, patches, requests, feedback are welcome.
 
 Last tested 7/2014 on Fedora 20. Still working great. 
