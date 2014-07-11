@@ -3,7 +3,7 @@ evhz
 
 Display the current mouse refresh rate under evdev linux system.
 
-It is sufficient to simply download evhz.c vs cloning the repo.
+The program is just evhz.c.
 
 To compile and run:
 
