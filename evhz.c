@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 					continue;
 				}
 
-				if(event.type == EV_REL) {
+				if(event.type == EV_REL || event.type == EV_ABS) {
 					double time;
 					int hz;
 
