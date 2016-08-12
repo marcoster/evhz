@@ -16,4 +16,5 @@ Maintainer: Ian Kelling <ian@iankelling.org>
 
 Bugs, patches, requests, feedback are welcome.
 
-Last tested 7/2014 on Fedora 20. Still working great. 
+Last tested 7/2016 on Debian testing. Still working great after several
+years.
