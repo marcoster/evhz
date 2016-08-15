@@ -1,7 +1,6 @@
-evhz
-====
+# evhz
 
-Display the current mouse refresh rate under linux with evdev.
+Display the current mouse refresh rate under linux with evdev
 
 For information about polling rate, see https://wiki.archlinux.org/index.php/Mouse_Polling_Rate
 
