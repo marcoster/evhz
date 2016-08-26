@@ -11,6 +11,11 @@ The program is just evhz.c. Compile and run:
 
 Nonverbose mode = -n
 
+There exists a kernel bug for USB ports which use the uhci_hcd driver,
+where a 1000 hz mouse will only read at 500hz, causing jittering:
+https://bugzilla.kernel.org/show_bug.cgi?id=60586. A workaround is to
+use USB ports that use the ehci-pci driver.
+
 Maintainer: Ian Kelling <ian@iankelling.org>
 
 Bugs, patches, requests, feedback are welcome.
