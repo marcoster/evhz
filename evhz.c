@@ -19,7 +19,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define EVENTS 50
+#define EVENTS 200
 #define HZ_LIST 64
 
 typedef struct event_s {
@@ -27,7 +27,7 @@ typedef struct event_s {
     int hz[HZ_LIST];
     int count;
     int avghz;
-    double prvtime;
+    double prev_time;
     char name[128];
 } event_t;
 
@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
     int i;
     event_t events[EVENTS];
     int verbose = 1;
+    int max_event = 0;
 
     while((optch = getopt(argc, argv, "hn")) != -1) {
         switch(optch) {
@@ -70,12 +71,15 @@ int main(int argc, char *argv[]) {
 
     // List input devices
     for(i = 0; i < EVENTS; i++) {
-        char device[19];
+        // 20 is needed for 3 digits of event devs under the expected format, but
+        // just give it some extra in case.
+        char device[30];
 
         sprintf(device, "/dev/input/event%i", i);
         events[i].fd = open(device, O_RDONLY);
 		
         if(events[i].fd != -1) {
+            max_event = i;
             ioctl(events[i].fd, EVIOCGNAME(sizeof(events[i].name)), events[i].name);
             if(verbose) printf("event%i: %s\n", i, events[i].name);
         }
@@ -86,58 +90,60 @@ int main(int argc, char *argv[]) {
 
         FD_ZERO(&set);
 
-        for(i = 0; i < EVENTS; i++) {
+        for(i = 0; i <= max_event; i++) {
             if(events[i].fd != -1) {
                 FD_SET(events[i].fd, &set);
             }
         }
 
-        if(select(FD_SETSIZE, &set, NULL, NULL, NULL) > 0) {
-            int bytes;
-            struct input_event event;
+        if(select(FD_SETSIZE, &set, NULL, NULL, NULL) <= 0) {
+            continue;
+        }
 
-            for(i = 0; i < EVENTS; i++) {
-                if(events[i].fd == -1 || !FD_ISSET(events[i].fd, &set)) {
-                    continue;
-                }
+        int bytes;
+        struct input_event event;
 
-                bytes = read(events[i].fd, &event, sizeof(event));
+        for(i = 0; i <= max_event; i++) {
+            if(events[i].fd == -1 || !FD_ISSET(events[i].fd, &set)) {
+                continue;
+            }
 
-                if(bytes != sizeof(event)) {
-                    continue;
-                }
+            bytes = read(events[i].fd, &event, sizeof(event));
 
-                if(event.type == EV_REL || event.type == EV_ABS) {
-                    double time;
-                    int hz;
+            if(bytes != sizeof(event)) {
+                continue;
+            }
 
-                    time = event.time.tv_sec * 1000 + event.time.tv_usec / 1000;
-                    hz = 1000 / (time - events[i].prvtime);
+            if(event.type == EV_REL || event.type == EV_ABS) {
+                double time;
+                int hz;
 
-                    if(hz > 0) {
-                        int j;
+                time = event.time.tv_sec * 1000 + event.time.tv_usec / 1000;
+                hz = 1000 / (time - events[i].prev_time);
 
-                        events[i].count++;
-                        events[i].hz[events[i].count & (HZ_LIST - 1)] = hz;
+                if(hz > 0) {
+                    int j;
 
-                        events[i].avghz = 0;
+                    events[i].count++;
+                    events[i].hz[events[i].count & (HZ_LIST - 1)] = hz;
 
-                        for(j = 0; j < HZ_LIST; j++) {
-                            events[i].avghz += events[i].hz[j];
-                        }
+                    events[i].avghz = 0;
 
-                        events[i].avghz /= (events[i].count > HZ_LIST) ? HZ_LIST : events[i].count;
-
-                        if(verbose) printf("%s: Latest % 5iHz, Average % 5iHz\n", events[i].name, hz, events[i].avghz);
+                    for(j = 0; j < HZ_LIST; j++) {
+                        events[i].avghz += events[i].hz[j];
                     }
 
-                    events[i].prvtime = time;
+                    events[i].avghz /= (events[i].count > HZ_LIST) ? HZ_LIST : events[i].count;
+
+                    if(verbose) printf("%s: Latest % 5iHz, Average % 5iHz\n", events[i].name, hz, events[i].avghz);
                 }
+
+                events[i].prev_time = time;
             }
         }
     }
 
-    for(i = 0; i < EVENTS; i++) {
+    for(i = 0; i < max_event; i++) {
         if(events[i].fd != -1) {
             if (events[i].avghz != 0) {
                 printf("\nAverage for %s: % 5iHz\n", events[i].name, events[i].avghz);

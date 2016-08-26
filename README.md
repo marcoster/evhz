@@ -4,12 +4,11 @@ Display the current mouse refresh rate under linux with evdev
 
 For information about polling rate, see https://wiki.archlinux.org/index.php/Mouse_Polling_Rate
 
-The program is just evhz.c. Compile and run:
+Just do ./run (run is very short and readable).
 
-    gcc -o evhz evhz.c
-    sudo ./evhz
+Nonverbose mode = -n, but you probably don't want that.
 
-Nonverbose mode = -n
+Reported average is for the last 64 samples, or as many as we have so far.
 
 There exists a kernel bug for USB ports which use the uhci_hcd driver,
 where a 1000 hz mouse will only read at 500hz, causing jittering:

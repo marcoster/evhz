@@ -1,0 +1,5 @@
+#!/bin/bash
+cd "${BASH_SOURCE%/*}"
+gcc -o evhz evhz.c
+[[ $EUID == 0 ]] || s=sudo
+$s ./evhz "$@"
