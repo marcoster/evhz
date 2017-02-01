@@ -27,7 +27,7 @@ typedef struct event_s {
     int hz[HZ_LIST];
     int count;
     int avghz;
-    double prev_time;
+    unsigned long long prev_time;
     char name[128];
 } event_t;
 
@@ -115,25 +115,32 @@ int main(int argc, char *argv[]) {
             }
 
             if(event.type == EV_REL || event.type == EV_ABS) {
-                double time;
-                int hz;
+                unsigned long long time, timediff;
+                unsigned hz = 0;
 
-                time = event.time.tv_sec * 1000 + event.time.tv_usec / 1000;
-                hz = 1000 / (time - events[i].prev_time);
+                time = (unsigned long long)event.time.tv_sec * 1000ULL;
+                time += (unsigned long long)event.time.tv_usec / 1000ULL;
+
+                timediff = time - events[i].prev_time;
+
+                if(timediff != 0)
+                    hz = 1000ULL / timediff;
 
                 if(hz > 0) {
-                    int j;
+                    unsigned j, maxavg;
 
                     events[i].count++;
                     events[i].hz[events[i].count & (HZ_LIST - 1)] = hz;
 
                     events[i].avghz = 0;
 
-                    for(j = 0; j < HZ_LIST; j++) {
+                    maxavg = (events[i].count > HZ_LIST) ? HZ_LIST : events[i].count;
+
+                    for(j = 0; j < maxavg; j++) {
                         events[i].avghz += events[i].hz[j];
                     }
 
-                    events[i].avghz /= (events[i].count > HZ_LIST) ? HZ_LIST : events[i].count;
+                    events[i].avghz /= maxavg;
 
                     if(verbose) printf("%s: Latest % 5iHz, Average % 5iHz\n", events[i].name, hz, events[i].avghz);
                 }
