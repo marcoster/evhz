@@ -19,7 +19,7 @@
 #include <getopt.h>
 #include <unistd.h>
 
-#define EVENTS 200
+#define EVENTS 400
 #define HZ_LIST 64
 
 typedef struct event_s {
