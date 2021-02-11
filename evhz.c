@@ -118,13 +118,13 @@ int main(int argc, char *argv[]) {
                 unsigned long long time, timediff;
                 unsigned hz = 0;
 
-                time = (unsigned long long)event.time.tv_sec * 1000ULL;
-                time += (unsigned long long)event.time.tv_usec / 1000ULL;
+                time = (unsigned long long)event.time.tv_sec * 8000ULL;
+                time += (unsigned long long)event.time.tv_usec / 125ULL;
 
                 timediff = time - events[i].prev_time;
 
                 if(timediff != 0)
-                    hz = 1000ULL / timediff;
+                    hz = 8000ULL / timediff;
 
                 if(hz > 0) {
                     unsigned j, maxavg;
